@@ -25,12 +25,13 @@ class _SearchFieldState extends State<SearchField> {
         ),
         body: Center(
             child: Container(
-          padding: const EdgeInsets.only(left: 50, right: 50),
+          padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               TextField(
-                decoration: const InputDecoration(hintText: "ex: Semarang"),
+                decoration: const InputDecoration(
+                    hintText: "Kota/Negara yang ingin di Tracking"),
                 controller: placeController,
               ),
               const SizedBox(

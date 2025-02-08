@@ -26,6 +26,38 @@ class _ResultState extends State<Result> {
     }
   }
 
+  String getWindDirection(int degrees) {
+    if (degrees >= 337.5 || degrees < 22.5) {
+      return 'Utara';
+    } else if (degrees >= 22.5 && degrees < 67.5) {
+      return 'Timur Laut';
+    } else if (degrees >= 67.5 && degrees < 112.5) {
+      return 'Timur';
+    } else if (degrees >= 112.5 && degrees < 157.5) {
+      return 'Tenggara';
+    } else if (degrees >= 157.5 && degrees < 202.5) {
+      return 'Selatan';
+    } else if (degrees >= 202.5 && degrees < 247.5) {
+      return 'Barat Daya';
+    } else if (degrees >= 247.5 && degrees < 292.5) {
+      return 'Barat';
+    } else {
+      return 'Barat Laut';
+    }
+  }
+
+  String getCountryName(String countryCode) {
+    switch (countryCode) {
+      case 'ID':
+        return 'Indonesia';
+      case 'JP':
+        return 'Jepang';
+      // Add more country codes and names as needed
+      default:
+        return countryCode;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -42,9 +74,17 @@ class _ResultState extends State<Result> {
                   Navigator.pop(context);
                 },
                 child: const Icon(Icons.arrow_back, color: Colors.white),
-              )),
+              ),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.refresh),
+                  onPressed: () {
+                    setState(() {});
+                  },
+                ),
+              ]),
           body: Container(
-            padding: const EdgeInsets.only(left: 70, right: 70),
+            padding: const EdgeInsets.symmetric(horizontal: 20),
             child: FutureBuilder(
               future: getDataFromAPI(),
               builder: (context, snapshot) {
@@ -53,35 +93,105 @@ class _ResultState extends State<Result> {
                 }
                 if (snapshot.hasData) {
                   final data = snapshot.data!; //data tidak boleh nol
+                  final windDirection = getWindDirection(data['wind']['deg']);
+                  final dateTime = DateTime.now();
+                  final formattedDate =
+                      "${dateTime.day}-${dateTime.month}-${dateTime.year}";
+                  final formattedTime =
+                      "${dateTime.hour}:${dateTime.minute}:${dateTime.second}";
+                  final countryName = getCountryName(data['sys']['country']);
                   return Container(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                                                
-                        Image(image: NetworkImage('https://flagsapi.com/${data["sys"]["country"]}/shiny/64.png')),
-
-                         Text("suhu: ${data['main']['feels_like']} C",
-                         
-                         style: const TextStyle(
-                          fontSize: 20
-                         ),),
-
-                         Text('kecepatan angin: ${data["wind"]["speed"]} m/s',
-                         style: const TextStyle(
-                          fontSize: 20
-                         ),),
-
-
-                    ],
+                        Image.network(
+                            'https://flagcdn.com/w320/${data["sys"]["country"].toLowerCase()}.png'),
+                        const SizedBox(height: 20),
+                        Table(
+                          columnWidths: const {
+                            0: IntrinsicColumnWidth(),
+                            1: FlexColumnWidth(),
+                          },
+                          border: TableBorder.all(),
+                          children: [
+                            TableRow(children: [
+                              const Padding(
+                                padding: EdgeInsets.all(8.0),
+                                child: Text('Negara'),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(countryName),
+                              ),
+                            ]),
+                            TableRow(children: [
+                              const Padding(
+                                padding: EdgeInsets.all(8.0),
+                                child: Text('Suhu'),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text("${data['main']['feels_like']} C"),
+                              ),
+                            ]),
+                            TableRow(children: [
+                              const Padding(
+                                padding: EdgeInsets.all(8.0),
+                                child: Text('Kecepatan Angin'),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text("${data["wind"]["speed"]} m/s"),
+                              ),
+                            ]),
+                            TableRow(children: [
+                              const Padding(
+                                padding: EdgeInsets.all(8.0),
+                                child: Text('Arah Angin'),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(windDirection),
+                              ),
+                            ]),
+                            TableRow(children: [
+                              const Padding(
+                                padding: EdgeInsets.all(8.0),
+                                child: Text('Tanggal'),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(formattedDate),
+                              ),
+                            ]),
+                            TableRow(children: [
+                              const Padding(
+                                padding: EdgeInsets.all(8.0),
+                                child: Text('Waktu'),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(formattedTime),
+                              ),
+                            ]),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+                        ElevatedButton(
+                          onPressed: () {
+                            setState(() {});
+                          },
+                          child: const Text('Refresh'),
+                        ),
+                      ],
                     ),
                   );
                 } else {
-                  return const Text("Tempat tidak dikeathui");
+                  return const Text("Tempat tidak diketahui");
                 }
               },
             ),
-          )
-        ),
+          )),
     );
   }
 }
